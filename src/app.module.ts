@@ -1,10 +1,23 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { RankingsModule } from './rankings/rankings.module';
+
+const configService = new ConfigService();
+const DB_URL = configService.get<string>('DB_URL');
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    RankingsModule,
+    ConfigModule.forRoot({ isGlobal: true }),
+    MongooseModule.forRoot(DB_URL, {
+      // useNewUrlParses: true,
+      // useCreateIndex: true,
+      useUnifiedTopology: true,
+      // useFindAndModify: false,
+    }),
+  ],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}
