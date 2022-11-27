@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { RankingsModule } from './rankings/rankings.module';
+import { ProxyrmqModule } from './proxyrmq/proxyrmq.module';
 
 const configService = new ConfigService();
 const DB_URL = configService.get<string>('DB_URL');
@@ -16,6 +17,7 @@ const DB_URL = configService.get<string>('DB_URL');
       useUnifiedTopology: true,
       // useFindAndModify: false,
     }),
+    ProxyrmqModule,
   ],
   controllers: [],
   providers: [],

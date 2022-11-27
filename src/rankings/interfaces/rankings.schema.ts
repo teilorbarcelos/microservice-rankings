@@ -16,13 +16,13 @@ export class Ranking extends mongoose.Document {
   category: string;
 
   @Prop()
-  events: string;
+  event: string;
 
   @Prop()
   operation: string;
 
   @Prop()
-  points: string;
+  points: number;
 }
 
 export const RankingSchema = SchemaFactory.createForClass(Ranking);

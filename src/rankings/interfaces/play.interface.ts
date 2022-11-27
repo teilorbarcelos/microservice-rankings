@@ -1,5 +1,6 @@
 export interface Play {
   category: string;
+  challenge: string;
   players: string[];
   def: string;
   result: Result[];
