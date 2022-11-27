@@ -2,7 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { lastValueFrom } from 'rxjs';
 import { ClientProxySmartRanking } from 'src/proxyrmq/client-proxy';
+import { Category } from './interfaces/category.interface';
+import { EventName } from './interfaces/event-name.enum';
 import { Play } from './interfaces/play.interface';
 import { Ranking } from './interfaces/rankings.schema';
 
@@ -18,6 +21,10 @@ export class RankingsService {
 
   async processPlay(playId: string, play: Play): Promise<void> {
     try {
+      const category: Category = await lastValueFrom(
+        this.clientAdminBackend.send('get-category', play.category),
+      );
+
       await Promise.all(
         play.players.map(async (player) => {
           const ranking = new this.challengeModel();
@@ -28,13 +35,19 @@ export class RankingsService {
           ranking.player = player;
 
           if (player === play.def) {
-            ranking.event = 'VICTORY';
-            ranking.points = 30;
-            ranking.operation = '+';
+            const eventFilter = category.events.filter(
+              (event) => event.name === EventName.VICTORY,
+            );
+            ranking.event = EventName.VICTORY;
+            ranking.points = eventFilter[0].value;
+            ranking.operation = eventFilter[0].operation;
           } else {
-            ranking.event = 'LOOSE';
-            ranking.points = 0;
-            ranking.operation = '+';
+            const eventFilter = category.events.filter(
+              (event) => event.name === EventName.LOOSE,
+            );
+            ranking.event = EventName.LOOSE;
+            ranking.points = eventFilter[0].value;
+            ranking.operation = eventFilter[0].operation;
           }
 
           this.logger.log(`ranking: ${JSON.stringify(ranking)}`);
