@@ -49,8 +49,8 @@ export class RankingsController {
     const originalMessage = context.getMessage();
 
     try {
-      const { categoryId, dataRef } = data;
-      return await this.rankingsService.getRankings(categoryId, dataRef);
+      const { categoryId, dateRef } = data;
+      return await this.rankingsService.getRankings(categoryId, dateRef);
     } finally {
       await channel.ack(originalMessage);
     }

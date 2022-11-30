@@ -10,6 +10,7 @@ import { Play } from './interfaces/play.interface';
 import { RankingResponse } from './interfaces/ranking-response.interface';
 import { Ranking } from './interfaces/rankings.schema';
 import * as momentTimezone from 'moment-timezone';
+import { Challenge } from './interfaces/challenge.interface';
 
 @Injectable()
 export class RankingsService {
@@ -20,6 +21,9 @@ export class RankingsService {
   private readonly logger = new Logger(RankingsService.name);
   private clientAdminBackend =
     this.clientProxySmartRanking.getClientProxyAdminBackendInstance();
+
+  private clientChallenges =
+    this.clientProxySmartRanking.getClientProxyChallengesInstance();
 
   async processPlay(playId: string, play: Play): Promise<void> {
     try {
@@ -65,16 +69,16 @@ export class RankingsService {
 
   async getRankings(
     categoryId: string,
-    dataRef: string,
+    dateRef: string,
   ): Promise<RankingResponse[] | RankingResponse> {
     try {
       this.logger.log(
-        `categoryId: ${JSON.stringify(categoryId)} dataRef: ${dataRef}`,
+        `categoryId: ${JSON.stringify(categoryId)} dateRef: ${dateRef}`,
       );
 
-      if (!dataRef) {
-        dataRef = momentTimezone().tz('America/Sao_Paulo').format('YYYY-MM-DD');
-        this.logger.log(`dataRef: ${dataRef}`);
+      if (!dateRef) {
+        dateRef = momentTimezone().tz('America/Sao_Paulo').format('YYYY-MM-DD');
+        this.logger.log(`dateRef: ${dateRef}`);
       }
 
       const rankingRegisters = await this.challengeModel
@@ -84,6 +88,13 @@ export class RankingsService {
         .exec();
 
       this.logger.log(`rankingRegisters: ${JSON.stringify(rankingRegisters)}`);
+
+      const challenges: Challenge[] = await lastValueFrom(
+        this.clientChallenges.send('get-done-challenges', {
+          categoryId,
+          dateRef,
+        }),
+      );
 
       return;
     } catch (error) {
